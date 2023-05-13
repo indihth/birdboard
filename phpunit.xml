@@ -21,8 +21,13 @@
         <server name="APP_ENV" value="testing"/>
         <server name="BCRYPT_ROUNDS" value="4"/>
         <server name="CACHE_DRIVER" value="array"/>
-        <server name="DB_CONNECTION" value="sqlite"/>
-        <server name="DB_DATABASE" value=":memory:"/>
+        <!-- Used for testing so actual db isn't affected. Overriding which db is used in testing.
+        PHPUnit loads this file and uses these env variables instead of those in .env-->
+        <server name="DB_CONNECTION" value="sqlite" />
+
+        <!-- :memory can be used with sqlite. Puts a db in memory-->
+        <server name="DB_DATABASE" value=":memory:" />
+        
         <server name="MAIL_DRIVER" value="array"/>
         <server name="QUEUE_CONNECTION" value="sync"/>
         <server name="SESSION_DRIVER" value="array"/>
