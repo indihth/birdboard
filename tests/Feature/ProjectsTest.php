@@ -37,4 +37,33 @@ class ProjectsTest extends TestCase
         // If a get request made to 'projects', expect to SEE attributes 'title'
         $this->get('/projects')->assertSee($attributes['title']);
     }
+
+        /** @test */
+
+    public function a_project_requries_a_title()
+    {
+
+        // make() does persist changes in DB, creates data (attributes) but doesn't save it
+        // Can overwrite anything in make() - make title an empty string
+
+        // raw() builds up attributes and store as an array, array is expected
+        $attributes = factory('App\Project')->raw(['title' => '']);
+
+        // If a post req is make to endpoint but no title is given (empty array)
+        // then assert that the session has errors
+        $this->post('/projects', $attributes)->assertSessionHasErrors('title');
+    }
+
+
+        /** @test */
+
+    public function a_project_requries_a_description()
+    {
+        $attributes = factory('App\Project')->raw(['description' => '']);
+
+
+        // If a post req is make to endpoint but no title is given
+        // then assert that the session has errors
+        $this->post('/projects', [])->assertSessionHasErrors('description');
+    }
 }
