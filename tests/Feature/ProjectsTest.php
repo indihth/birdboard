@@ -13,6 +13,23 @@ class ProjectsTest extends TestCase
 
     // @test needed so phpunit treats the function as a test, regardless of name
 
+
+    /** @test */
+
+    public function only_authenticated_users_can_create_projects()
+    {
+
+        $attributes = factory('App\Project')->raw();
+
+        // If a post req is make to endpoint but no title is given
+        // then assert that the session has errors
+        // $this->post('/projects', $attributes)->assertSessionHasErrors('owner_id');
+
+        // If non-logged in user tries to create a project, they're redirected to login
+        $this->post('/projects', $attributes)->assertRedirect('login');
+    }
+
+
     /** @test */
 
     public function a_user_can_create_a_project()
@@ -21,6 +38,8 @@ class ProjectsTest extends TestCase
         // Disables Laravels catching and handling of exceptions. Allows the exception to be seen in testing, 
         // otherwise the post('/projects') wouldn't show as an exception
         $this->withoutExceptionHandling();
+
+        $this->actingAs(factory('App\User')->create());
 
         // Example attributes
         $attributes = [
@@ -38,26 +57,30 @@ class ProjectsTest extends TestCase
         $this->get('/projects')->assertSee($attributes['title']);
     }
 
-        /** @test */
+    /** @test */
 
-        public function a_user_can_view_a_project()
-        {
-            $this->withoutExceptionHandling(); // Disable Laravels exception handling
+    public function a_user_can_view_a_project()
+    {
+        $this->withoutExceptionHandling(); // Disable Laravels exception handling
 
-            // Given a project exists in the db
-            $project = factory('App\Project')->create();
 
-            // Expect to see the project title and description
-            $this->get($project->path()) // Now using Project helper function
+
+        // Given a project exists in the db
+        $project = factory('App\Project')->create();
+
+        // Expect to see the project title and description
+        $this->get($project->path()) // Now using Project helper function
             ->assertSee($project->title)
             ->assertSee($project->description);
-        }
+    }
 
 
-        /** @test */
+    /** @test */
 
     public function a_project_requries_a_title()
     {
+        // Creates a new user and sets as authenticated
+        $this->actingAs(factory('App\User')->create());
 
         // make() does persist changes in DB, creates data (attributes) but doesn't save it
         // Can overwrite anything in make() - make title an empty string
@@ -71,12 +94,13 @@ class ProjectsTest extends TestCase
     }
 
 
-        /** @test */
+    /** @test */
 
     public function a_project_requries_a_description()
     {
-        $attributes = factory('App\Project')->raw(['description' => '']);
+        $this->actingAs(factory('App\User')->create());
 
+        $attributes = factory('App\Project')->raw(['description' => '']);
 
         // If a post req is make to endpoint but no title is given
         // then assert that the session has errors
