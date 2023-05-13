@@ -40,6 +40,22 @@ class ProjectsTest extends TestCase
 
         /** @test */
 
+        public function a_user_can_view_a_project()
+        {
+            $this->withoutExceptionHandling(); // Disable Laravels exception handling
+
+            // Given a project exists in the db
+            $project = factory('App\Project')->create();
+
+            // Expect to see the project title and description
+            $this->get($project->path()) // Now using Project helper function
+            ->assertSee($project->title)
+            ->assertSee($project->description);
+        }
+
+
+        /** @test */
+
     public function a_project_requries_a_title()
     {
 
