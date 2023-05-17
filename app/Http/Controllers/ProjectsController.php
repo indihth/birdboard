@@ -9,22 +9,24 @@ class ProjectsController extends Controller
 {
     public function index()
     {
-        $projects = Project::all();
+        // Scopes to only projects belonging to the authenticated user - scope projects
+        $projects = auth()->user()->projects;
 
         return view('projects.index', compact('projects'));
     }
 
     public function show(Project $project)
     {
-        ///////////////////////////////////////////
-        // Finds the ID from the route request /projects/{project}
-        // findOrFail used to throw exception is nothing found
-        // Not needed due to Route Model Binding above (Project $project)
-        // 
-        // $project = Project::findOrFail(request('project'));
-        ///////////////////////////////////////////
+        if (auth()->user()->isNot($project->owner)) {
+            abort(403);
+        }
 
         return view('projects.show', compact('project'));
+
+        // /////////////////////////////////////////
+        // Finds the ID from the route request /projects/{project} findOrFail used to throw exception is nothing found. Not needed due to Route Model Binding above (Project $project)
+        // $project = Project::findOrFail(request('project'));
+        // /////////////////////////////////////////
     }
 
     public function store()

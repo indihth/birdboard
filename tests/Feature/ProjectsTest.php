@@ -16,7 +16,7 @@ class ProjectsTest extends TestCase
 
     /** @test */
 
-    public function only_authenticated_users_can_create_projects()
+    public function guests_cannot_create_projects()
     {
 
         $attributes = factory('App\Project')->raw();
@@ -27,6 +27,23 @@ class ProjectsTest extends TestCase
 
         // If non-logged in user tries to create a project, they're redirected to login
         $this->post('/projects', $attributes)->assertRedirect('login');
+    }
+
+    /** @test */
+
+    public function guests_cannot_view_projects()
+    {
+        $this->get('/projects')->assertRedirect('login');
+    }
+
+    /** @test */
+
+    public function guests_cannot_view_a_single_project()
+    {
+        $project = factory('App\Project')->create();
+
+        // If project path can't be accessed, redirect to login
+        $this->get($project->path())->assertRedirect('login');
     }
 
 
@@ -59,19 +76,33 @@ class ProjectsTest extends TestCase
 
     /** @test */
 
-    public function a_user_can_view_a_project()
+    public function a_user_can_view_their_project()
     {
+        // Create user and signin to view THEIR project
+        $this->be(factory('App\User')->create());
+
         $this->withoutExceptionHandling(); // Disable Laravels exception handling
 
-
-
-        // Given a project exists in the db
-        $project = factory('App\Project')->create();
+        // Given a project exists in the db, specify signed in person if the owner
+        $project = factory('App\Project')->create(['owner_id' => auth()->id()]);
 
         // Expect to see the project title and description
         $this->get($project->path()) // Now using Project helper function
             ->assertSee($project->title)
             ->assertSee($project->description);
+
+        }
+    /** @test */
+
+    public function an_authenticated_user_cannont_view_projects_of_others()
+    {
+        $this->be(factory('App\User')->create());
+
+        // $this->withoutExceptionHandling(); // Disable Laravels exception handling
+
+        $project = factory('App\Project')->create();
+
+        $this->get($project->path())->assertStatus(403);
     }
 
 
