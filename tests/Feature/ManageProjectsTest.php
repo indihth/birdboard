@@ -6,7 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
-class ProjectsTest extends TestCase
+class ManageProjectsTest extends TestCase
 {
     // When running tests that will change the db in someway. Use RefreshDatabase trait to reset everything after test
     use WithFaker, RefreshDatabase;
@@ -16,24 +16,32 @@ class ProjectsTest extends TestCase
 
     /** @test */
 
-    public function guests_cannot_create_projects()
+    public function guests_cannot_manage_projects()
     {
 
-        $attributes = factory('App\Project')->raw();
+        $project = factory('App\Project')->create();
 
         // If a post req is make to endpoint but no title is given
         // then assert that the session has errors
         // $this->post('/projects', $attributes)->assertSessionHasErrors('owner_id');
 
+        $this->get('/projects')->assertRedirect('login');    // If access to dashboard is attempted, redirect to login
+        $this->get('/projects/create')->assertRedirect('login');    // Guests can't access create page
+
+        // If access tried to specific project, redirect 
+        $this->get($project->path())->assertRedirect('login');
+
         // If non-logged in user tries to create a project, they're redirected to login
-        $this->post('/projects', $attributes)->assertRedirect('login');
+        $this->post('/projects', $project->toArray())->assertRedirect('login');
+
+
+
     }
 
     /** @test */
 
     public function guests_cannot_view_projects()
     {
-        $this->get('/projects')->assertRedirect('login');
     }
 
     /** @test */
@@ -43,7 +51,6 @@ class ProjectsTest extends TestCase
         $project = factory('App\Project')->create();
 
         // If project path can't be accessed, redirect to login
-        $this->get($project->path())->assertRedirect('login');
     }
 
 
@@ -57,6 +64,9 @@ class ProjectsTest extends TestCase
         $this->withoutExceptionHandling();
 
         $this->actingAs(factory('App\User')->create());
+
+        // Expect create page to load
+        $this->get('/projects/create')->assertStatus(200);
 
         // Example attributes
         $attributes = [
