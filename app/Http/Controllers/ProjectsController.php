@@ -29,6 +29,12 @@ class ProjectsController extends Controller
         // /////////////////////////////////////////
     }
 
+    
+    public function create()
+    {
+        return view('projects.create');
+    }
+
     public function store()
     {
 
@@ -39,7 +45,7 @@ class ProjectsController extends Controller
         ]);
 
         // Sets the authenticated user as owner
-        $attributes['owner_id'] = auth()->id();
+        // $attributes['owner_id'] = auth()->id();
 
         // Automatically set the owner_id to auth user with User Project model relationship
         auth()->user()->projects()->create($attributes);
@@ -47,4 +53,5 @@ class ProjectsController extends Controller
         // redirect
         return redirect('/projects');
     }
+
 }
